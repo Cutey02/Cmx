@@ -5,7 +5,7 @@ from pyrogram import filters
 from pyrogram.errors import FloodWait
 from pyrogram.types import Message
 
-from config import BANNED_USERS, OWNER_ID, GBAN_LOG_ID
+from config import BANNED_USERS, OWNER_ID, LOG_GROUP_ID
 from strings import get_command
 from AnonX import app
 from AnonX.misc import SUDOERS
@@ -24,7 +24,7 @@ UNGBAN_COMMAND = get_command("UNGBAN_COMMAND")
 GBANNED_COMMAND = get_command("GBANNED_COMMAND")
 
 #CHANNEL ID TO STORE GBAN USERS AND THEIR REASONS OF BEING GBANNED
-GBAN_CHANNEL = GBAN_LOG_ID
+GBAN_CHANNEL = LOG_GROUP_ID
 
 @app.on_message(filters.command(GBAN_COMMAND) & SUDOERS)
 @language
