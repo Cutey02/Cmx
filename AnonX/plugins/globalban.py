@@ -5,7 +5,7 @@ from pyrogram import filters
 from pyrogram.errors import FloodWait
 from pyrogram.types import Message
 
-from config import BANNED_USERS
+from config import BANNED_USERS, OWNER_ID, GBAN_LOG_ID
 from strings import get_command
 from AnonX import app
 from AnonX.misc import SUDOERS
@@ -16,24 +16,32 @@ from AnonX.utils.database import (add_banned_user,
                                        get_served_chats,
                                        is_banned_user,
                                        remove_banned_user)
-from AnonX.utils.decorators.language import language
+from OpVirMusic.utils.decorators.language import language
 
 # Command
 GBAN_COMMAND = get_command("GBAN_COMMAND")
 UNGBAN_COMMAND = get_command("UNGBAN_COMMAND")
 GBANNED_COMMAND = get_command("GBANNED_COMMAND")
 
+#CHANNEL ID TO STORE GBAN USERS AND THEIR REASONS OF BEING GBANNED
+GBAN_CHANNEL = GBAN_LOG_ID
 
 @app.on_message(filters.command(GBAN_COMMAND) & SUDOERS)
 @language
 async def gbanuser(client, message: Message, _):
     if not message.reply_to_message:
-        if len(message.command) != 2:
-            return await message.reply_text(_["general_1"])
-        user = message.text.split(None, 1)[1]
+        text_cutting = message.text.split(" ")
+        user = text_cutting[1]
+        choose_reason = text_cutting[2:]
+        reason = " ".join(choose_reason)
         user = await app.get_users(user)
         user_id = user.id
         mention = user.mention
+        sudo_admin = message.from_user.username
+        sudo_admin_id = message.from_user.id
+        sudo_first_name = message.from_user.first_name
+        if len(text_cutting)<=2:
+            return await message.reply_text(_["gban_reason"])
     else:
         user_id = message.reply_to_message.from_user.id
         mention = message.reply_to_message.from_user.mention
@@ -67,10 +75,11 @@ async def gbanuser(client, message: Message, _):
         except Exception:
             pass
     await add_banned_user(user_id)
-    await message.reply_sticker("CAACAgEAAx0CXmipowACBSZkgXF3Kw6CYfJ0PIIprJG1FW2_oAACugIAAgaOCURcH8Z7qV5W9i8E")
     await message.reply_text(
         _["gban_6"].format(mention, number_of_chats)
     )
+    await app.send_message(GBAN_CHANNEL,_["gban_log"].format(sudo_first_name, sudo_admin, mention, reason))
+    await app.send_message(GBAN_CHANNEL,_["gban_warning"].format(mention))
     await mystic.delete()
 
 
@@ -78,12 +87,18 @@ async def gbanuser(client, message: Message, _):
 @language
 async def gungabn(client, message: Message, _):
     if not message.reply_to_message:
-        if len(message.command) != 2:
-            return await message.reply_text(_["general_1"])
-        user = message.text.split(None, 1)[1]
+        text_cutting = message.text.split(" ")
+        user = text_cutting[1]
         user = await app.get_users(user)
         user_id = user.id
         mention = user.mention
+        choose_reason = text_cutting[2:]
+        reason = " ".join(choose_reason)
+        sudo_admin = message.from_user.username
+        sudo_admin_id = message.from_user.id
+        sudo_first_name = message.from_user.first_name
+        if len(text_cutting)<=2:
+            return await message.reply_text(_["ungban_reason"])
     else:
         user_id = message.reply_to_message.from_user.id
         mention = message.reply_to_message.from_user.mention
@@ -111,10 +126,10 @@ async def gungabn(client, message: Message, _):
         except Exception:
             pass
     await remove_banned_user(user_id)
-    await message.reply_sticker("CAACAgEAAx0CXmipowACBSZkgXF3Kw6CYfJ0PIIprJG1FW2_oAACugIAAgaOCURcH8Z7qV5W9i8E")
     await message.reply_text(
         _["gban_9"].format(mention, number_of_chats)
     )
+    await app.send_message(GBAN_CHANNEL,_["ugban_log"].format(sudo_first_name, sudo_admin, mention, reason))
     await mystic.delete()
 
 
@@ -125,7 +140,7 @@ async def gbanned_list(client, message: Message, _):
     if counts == 0:
         return await message.reply_text(_["gban_10"])
     mystic = await message.reply_text(_["gban_11"])
-    msg = "ɢʙᴀɴɴᴇᴅ ᴜsᴇʀs:\n\n"
+    msg = "Gbanned Users:\n\n"
     count = 0
     users = await get_banned_users()
     for user_id in users:
@@ -137,7 +152,7 @@ async def gbanned_list(client, message: Message, _):
             )
             msg += f"{count}➤ {user}\n"
         except Exception:
-            msg += f"{count}➤ [ᴜɴᴋɴᴏᴡɴ ᴜsᴇʀ]{user_id}\n"
+            msg += f"{count}➤ [Unfetched User]{user_id}\n"
             continue
     if count == 0:
         return await mystic.edit_text(_["gban_10"])
