@@ -16,7 +16,7 @@ from AnonX.utils.database import (add_banned_user,
                                        get_served_chats,
                                        is_banned_user,
                                        remove_banned_user)
-from OpVirMusic.utils.decorators.language import language
+from AnonX.utils.decorators.language import language
 
 # Command
 GBAN_COMMAND = get_command("GBAN_COMMAND")
