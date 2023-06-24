@@ -58,7 +58,7 @@ def help_pannel(_, START: Union[bool, int] = None):
                     text="📽️ ᴠɪᴅᴇᴏᴄʜᴀᴛs 🎞️",
                     callback_data="help_callback hb10",
                 ),
-            [,
+            ],
             [
                 InlineKeyboardButton(
                     text="☣ sᴜᴅᴏ 🔓",
